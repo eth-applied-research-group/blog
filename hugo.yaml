@@ -1,11 +1,11 @@
-baseURL: https://argchive.io/
+baseURL: https://argchive.dev/
 languageCode: en-us
-title: Applied Research Group
+title: Ethereum Applied Research Group
 theme: PaperMod
 
 params:
   homeInfoParams:
-    Title: "Welcome to the Ethereum Applied Research Group Blog 👋"
+    Title: "Research, applied to what's next in Ethereum."
     Content: >
-      We are a community of researchers and developers exploring the frontiers of Ethereum technology.
-      Here you'll find technical deep-dives, research findings, and insights about the future of Ethereum.
+      We are a community of researchers and engineers exploring new directions in Ethereum.
+      Here, you'll find our technical deep-dives, research findings, and insights.
