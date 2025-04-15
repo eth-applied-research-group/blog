@@ -36,3 +36,25 @@ hugo server -D
 ```
 
 The site will be available at `http://localhost:1313`
+
+## Creating a new post
+
+To create a new post, use the Hugo CLI:
+
+```bash
+hugo new posts/your-post-name.md
+```
+
+This will create a new markdown file in `content/posts/` with pre-filled front matter.
+
+Edit the file to add your content. The front matter should include:
+
+```yaml
+---
+title: "Your Post Title"
+date: YYYY-MM-DD
+draft: true
+---
+```
+
+Remove `draft: true` when ready to publish.
