@@ -13,7 +13,7 @@ The code in question implements a new ["Heartbeat" specification](https://www.rf
 
 Neat. Can you spot the bug?
 
-The catch is that the recipient never checks whether the supplied length actually matches the message. This allows the sender blatantly lie about the message length, tricking the recipient into leaking extra information from memory back to the sender.
+The catch is that the recipient never checks whether the supplied length actually matches the message. This gives the sender an opportunity to blatantly lie about the message length, tricking the recipient into leaking extra information from memory back to the sender.
 
 {{< figure src="/blog/img/nye-proof-specs/say-hat.jpg" >}}
 
