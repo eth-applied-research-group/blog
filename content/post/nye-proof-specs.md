@@ -37,7 +37,7 @@ More unit tests? Yes.
 
 No deployments on New Year's Eve? A necessary sacrifice, sure.
 
-The _why_ is rather hidden in plain sight. Throughout a specification, we bury its structural integrity —its _invariants_—in normative prose.
+But the _why_ is rather hidden in plain sight. Throughout a specification, we bury its structural integrity —its _invariants_—in normative prose.
 
 What if we didn't?
 
