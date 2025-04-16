@@ -3,17 +3,21 @@ date: "2025-04-15T19:30:32+02:00"
 title: "New Year's Eve-Proofing Your Specifications"
 ---
 
-On an unsuspecting [New Year's Eve](https://github.com/openssl/openssl/commit/4817504d069b4c5082161b02a22116ad75f822b1), the code shown below nearly crippled the Internet, resulting in damages estimated at half a billion dollars.
+On an unsuspecting [New Year's Eve](https://github.com/openssl/openssl/commit/4817504d069b4c5082161b02a22116ad75f822b1), the few lines of C code shown below nearly crippled the Internet, raking up half a billion dollars in damages.
 
 {{< figure src="/img/nye-proof-specs/heartbeat-code.png" >}}
+
+## The heartbleed bug
 
 The code in question implements a new ["Heartbeat" specification](https://www.rfc-editor.org/rfc/rfc6520) for the [TLS encryption protocol](https://en.wikipedia.org/wiki/Transport_Layer_Security), aiming to solve an important bottleneck: establishing a new TLS connection is expensive. The specification proposes that the sender post an arbitrary "heartbeat" message to the recipient. The recipient interprets this as a signal to keep the connection alive and confirms by echoing the message back to the sender.
 
 {{< figure src="/img/nye-proof-specs/say-bird.jpg" caption="Credit: xkcd" >}}
 
-Neat. Can you spot the bug?
+Neat. But the code had a fatal flaw: it trusts that the sender reports correct length of the message.
 
-The catch is that the recipient never checks whether the supplied length actually matches the message. This gives the sender an opportunity to blatantly lie about the message length, tricking the recipient into leaking extra information from memory back to the sender.
+The recipient didn't check.
+
+This gives the sender an opportunity to blatantly lie about the message length, tricking the recipient into leaking extra information from memory back to the sender.
 
 {{< figure src="/img/nye-proof-specs/say-hat.jpg" >}}
 
@@ -33,21 +37,13 @@ More unit tests? Yes.
 
 No deployments on New Year's Eve? A necessary sacrifice, sure.
 
-I’d argue that the _why_ is rather hidden in plain sight. Throughout a specification, the structural integrity of a system—its _invariant_—is often buried in normative prose.
-This bug shows that it's all too easy to overlook invariants, especially on a _noisy_ New Year's Eve.
+The _why_ is rather hidden in plain sight. Throughout a specification, we bury its structural integrity —its _invariants_—in normative prose.
 
-Instead, the format below lets a specification **YELL** its invariants:
+What if we didn't?
 
-| Field                 | Description                                                                                | Example                                                                                                           |
-| --------------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
-| **Identifier**        | A unique reference that makes it easy to refer to the invariant.                           | `HB-01`                                                                                                           |
-| **Description**       | A clear, human-readable explanation of what the invariant ensures.                         | The invariant guarantees that the declared length of a heartbeat message exactly matches its actual payload size. |
-| **Formal Expression** | A formal version of the invariant provided in mathematical notation, pseudocode, or a DSL. | `∀ HeartbeatMessage: HeartbeatMessage.payload_length = payload_length`                                            |
-| **Scope**             | Details where (or in which parts of the system) the invariant applies.                     | Heartbeat request and response.                                                                                   |
-| **Rationale**         | Explains why the invariant is critical and what could go wrong if it’s violated.           | Prevents unintended side-effects caused by mismatch in the message and its declared length.                       |
+## First-class spec invariants
 
-Fortunately, Ethereum's specifications are executable, adding an extra layer of robustness.
-Still, explicitly enumerated invariants offer compelling advantages.
+Fortunately, Ethereum's specs are [executable](https://github.com/ethereum/execution-specs), which strengthens their reliability. But there's still a clear edge to having explicitly defined invariants.
 
 First, it makes communication predictable and robust. For example, consider the following excerpt from [EIP-7623](https://eips.ethereum.org/EIPS/eip-7623):
 
@@ -63,27 +59,26 @@ on [client-specific error messages](https://github.com/ethereum/execution-spec-t
 {{< figure src="/img/nye-proof-specs/exception-mapper.png" >}}
 
 Even a minor typo or slight change in the client error message can lead to outcomes ranging from a [benign false positive](https://github.com/ethereum/execution-spec-tests/issues/1412) to a catastrophic security breach.
-The mechanism is so abysmally delicate that you can practically hear it creaking.
+The mechanism is so abysmally delicate that you can almost hear it creaking.
 
-An EIP-namespaced, enumerated set of invariants provides a better alternative:
+Imagine if specs looked like this:
 
 | Field                 | Example                                                                                                           |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| **Identifier**        | `7623-01`                                                                                                         |
+| **Identifier**        | `7623-01` [EIP namespaced, enumerated]                                                                            |
 | **Description**       | Guarantees transactions reserve a minimum gas amount needed to cover revised calldata costs.                      |
 | **Formal Expression** | `∀ Tx: gas_limit(Tx) ≥ max( intrinsic_gas_cost(Tx), 21000 + TOTAL_COST_FLOOR_PER_TOKEN × tokens_in_calldata(Tx))` |
 | **Scope**             | All Ethereum transactions.                                                                                        |
 | **Rationale**         | Prevents processing transactions with insufficient gas to protect against potential execution or security issues. |
 
-The outcome is a precise, client-independent violation that is uniquely identifiable throughout the protocol:
+The outcome is a precise protocol-wide violation. Its testable - across clients, across versions, across decades.
 
 {{< figure src="/img/nye-proof-specs/better-error.png" >}}
 
-Second, explicitly defined invariants in the specifications—and in their corresponding executable versions—allow for easier formal verification,
-which can help detect conflicts as the protocol grows complex.
-I'm hopeful that implementation teams will further enrich these specifications with any invariants they discover along the way. win-win.
+Second, explicitly defined invariants in both the specs and their executable versions make formal verification simpler, helping spot conflicts as the protocol grows complex.
+Hopefully, implementation teams will keep enriching specs with any new invariants they find along the way—it's a win-win.
 
-Let's ensure that specifications leave nothing to chance, even when they're implemented on a New Year's Eve.
+Specs shouldn't whisper invariants. They should yell them.
 
 ## References
 
