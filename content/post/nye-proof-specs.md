@@ -10,9 +10,13 @@ On an unsuspecting [New Year's Eve](https://github.com/openssl/openssl/commit/48
 
 The code in question implements a new ["Heartbeat" specification](https://www.rfc-editor.org/rfc/rfc6520) (shown on its right) for the [TLS encryption protocol](https://en.wikipedia.org/wiki/Transport_Layer_Security), aiming to solve an important bottleneck: establishing a new TLS connection is expensive. The specification proposes that the sender post an arbitrary "heartbeat" message to the recipient. The recipient interprets this as a signal to keep the connection alive and confirms by echoing the message back to the sender.
 
+{{< figure src="/img/nye-proof-specs/say-bird.jpg"  caption="Credit: xkcd" >}}
+
 Neat. Can you spot the bug?
 
 The catch is that the recipient never checks whether the supplied length actually matches the message. This allows the sender blatantly lie about the message length, tricking the recipient into leaking extra information from memory back to the sender.
+
+{{< figure src="/img/nye-proof-specs/say-hat.jpg" >}}
 
 The now infamous bug, cleverly named Heartbleed, lets a malicious sender peek behind the TLS curtain and expose contents from memory. In a twist of cosmic irony, it often reveals exactly the information that TLS is designed to protect—such as private keys or login credentials.
 
@@ -30,7 +34,7 @@ More unit tests? Yes.
 
 No deployments on New Year's Eve? A necessary sacrifice, sure.
 
-I’d argue that the _why_ is hidden in plain sight. Throughout a specification, the structural integrity of a system—its _invariant_—is often buried in normative prose.
+I’d argue that the _why_ is rather hidden in plain sight. Throughout a specification, the structural integrity of a system—its _invariant_—is often buried in normative prose.
 This bug shows that it's all too easy to overlook invariants, especially on a _noisy_ New Year's Eve.
 
 Instead, the format below lets a specification YELL its invariants:
