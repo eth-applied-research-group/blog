@@ -9,7 +9,9 @@ params:
     Content: >
       We are a community of researchers and engineers exploring new directions in Ethereum.
       Here, you'll find our technical deep-dives, research findings, and insights.
-
+  ShowReadingTime: true
+  cover:
+    linkFullImages: true
 caches:
   images:
     dir: :cacheDir/images
