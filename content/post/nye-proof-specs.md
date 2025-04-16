@@ -47,6 +47,26 @@ Instead, the format below lets a specification YELL its invariants:
 | Scope             | Details where (or in which parts of the system) the invariant applies.                     | Heartbeat request and response.                                                                                   |
 | Rationale         | Explains why the invariant is critical and what could go wrong if it’s violated.           | Prevents unintended side-effects caused by mismatch in the message and its declared length.                       |
 
+Fortunately, Ethereum's specifications are executable, adding an extra layer of robustness.
+Still, explicitly enumerated invariants offer compelling advantages.
+
+First, it makes communication predictable and robust. For example, consider the following excerpt from EIP-7623:
+
+The testing framework that verifies this specification across different implementations relies on client-specific error messages to detect violations:
+
+Even a minor typo or slight change in the client error message can lead to outcomes ranging from a benign false positive to a catastrophic security breach.
+The mechanism is so abysmally delicate that you can practically hear it creaking.
+
+A namespaced, enumerated set of invariants provides a stronger alternative:
+
+The outcome is a precise, client-independent violation that is uniquely identifiable throughout the protocol.
+
+Second, explicitly defined invariants in the specifications—and in their corresponding executable versions—allow for easier formal verification,
+which can help detect conflicts as the protocol grows complex.
+I'm hopeful that implementation teams will further enrich these specifications with any invariants they discover along the way. It's a win-win.
+
+Let's ensure that specifications leave nothing to chance, even when they're implemented on New Year's Eve.
+
 ## References
 
 - [Diagnosis of the OpenSSL Heartbleed Bug](https://web.archive.org/web/20141015215508/http://blog.existentialize.com/diagnosis-of-the-openssl-heartbleed-bug.html)
