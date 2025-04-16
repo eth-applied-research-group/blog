@@ -28,6 +28,15 @@ I’d argue that the _why_ is hidden in plain sight. Throughout a specification,
 
 Instead, the format below lets a specification YELL its invariants:
 
+| Field             | Description                                                                                | Example                                                                                                           |
+| ----------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| Identifier        | A unique reference that makes it easy to refer to the invariant.                           | `HB-01`                                                                                                           |
+| Description       | A clear, human-readable explanation of what the invariant ensures.                         | The invariant guarantees that the declared length of a heartbeat message exactly matches its actual payload size. |
+| Formal Expression | A formal version of the invariant provided in mathematical notation, pseudocode, or a DSL. | ∀ heartbeat M: declared_message_length = length(M).                                                               |
+| Scope             | Details where (or in which parts of the system) the invariant applies.                     | Heartbeat request and response.                                                                                   |
+| Rationale         | Explains why the invariant is critical and what could go wrong if it’s violated.           | Prevents unintended side-effects caused by mismatch in the message and its declared length.                       |
+
 ## References
 
 - [Diagnosis of the OpenSSL Heartbleed Bug](https://web.archive.org/web/20141015215508/http://blog.existentialize.com/diagnosis-of-the-openssl-heartbleed-bug.html)
+- [Heartbleed, Bruce Schneier](https://www.schneier.com/blog/archives/2014/04/heartbleed.html)
