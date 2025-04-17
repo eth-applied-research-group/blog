@@ -3,6 +3,8 @@ date: "2025-04-15T19:30:32+02:00"
 title: "New Year's Eve-Proofing Your Specifications"
 ---
 
+**This post explores the benefits of explicitly listing invariants as part of a specification.**
+
 On an unsuspecting [New Year's Eve](https://github.com/openssl/openssl/commit/4817504d069b4c5082161b02a22116ad75f822b1), the few lines of C code shown below nearly crippled the Internet, raking up half a billion dollars in damages.
 
 {{< figure src="/img/nye-proof-specs/heartbeat-code.png" >}}
@@ -82,6 +84,8 @@ Second, explicitly defined invariants in both the specs and their executable ver
 Hopefully, implementation teams will keep enriching specs with any new invariants they find along the way—it's a win-win.
 
 Specs shouldn't whisper invariants. They should _yell_ them.
+
+_Thanks to Kev for discussions and feedback._
 
 ## References
 
