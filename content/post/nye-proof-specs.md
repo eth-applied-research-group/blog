@@ -33,13 +33,13 @@ Interestingly, the specification casually notes to "silently discard" this edge 
 
 {{< figure src="/img/nye-proof-specs/highlighted-specs.jpg" >}}
 
-How could we better nudge implementation do what it says on the tin?
+Could we better nudge implementation do what it says on the tin?
 
 More unit tests? Yes.
 
 No deployments on New Year's Eve? A necessary sacrifice, sure.
 
-But the _why_ is rather hidden in plain sight. Throughout a specification, we bury its structural integrity —its _invariants_—in normative prose.
+But the _why_ is rather hidden in plain sight. Throughout a specification, we bury its structural integrity —its _invariants_—in easy to miss normative prose.
 
 What if we didn't?
 
