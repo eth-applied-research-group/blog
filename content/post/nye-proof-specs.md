@@ -45,7 +45,9 @@ What if we didn't?
 
 Fortunately, Ethereum's specs are [executable](https://github.com/ethereum/execution-specs), which strengthens their reliability. But there's still a clear edge to having explicitly defined invariants.
 
-First, it makes communication predictable and robust. For example, consider the following excerpt from [EIP-7623](https://eips.ethereum.org/EIPS/eip-7623):
+First, we get **standardized errors** for free. Currently, errors are a fragmented mess across clients.
+
+For instance, consider the following excerpt from [EIP-7623](https://eips.ethereum.org/EIPS/eip-7623):
 
 > Any transaction with a gas limit below `21000 + TOTAL_COST_FLOOR_PER_TOKEN * tokens_in_calldata` or below its intrinsic
 > gas cost (take the maximum of these two calculations) is considered invalid. This limitation exists because transactions
@@ -53,15 +55,16 @@ First, it makes communication predictable and robust. For example, consider the 
 > There are valid cases where `gasUsed` will be below this floor price, but the floor price needs to be reserved in
 > the transaction gas limit.
 
-The [testing framework](https://github.com/ethereum/execution-spec-tests) that verifies this specification across different implementations relies
-on [client-specific error messages](https://github.com/ethereum/execution-spec-tests/blob/main/src/ethereum_clis/clis/geth.py) to detect violations:
+For the exact same spec, geth has [two errors](https://github.com/ethereum/go-ethereum/blob/13b157a461c88678cd4e15ca005e7b45d823431b/core/error.go#L77-L83), while the [testing framework](https://github.com/ethereum/execution-spec-tests) has [just one.](https://github.com/ethereum/execution-spec-tests/issues/1412)
+
+Plus, in the absence of standard error codes, the testing framework falls back on [client-specific error messages](https://github.com/ethereum/execution-spec-tests/blob/main/src/ethereum_clis/clis/geth.py) to detect errors:
 
 {{< figure src="/img/nye-proof-specs/exception-mapper.png" >}}
 
-Even a minor typo or slight change in the client error message can lead to outcomes ranging from a [benign false positive](https://github.com/ethereum/execution-spec-tests/issues/1412) to a catastrophic security breach.
+A typo or slight change in the client error message can lead to outcomes ranging from a [benign false positive](https://github.com/ethereum/execution-spec-tests/issues/1412) to a gaping security hole.
 The mechanism is so abysmally delicate that you can almost hear it creaking.
 
-Imagine if specs looked like this:
+First-class invariants in specs eliminate the guesswork:
 
 | Field                 | Example                                                                                                           |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------- |
@@ -75,10 +78,10 @@ The outcome is a precise protocol-wide violation. Its testable - across clients,
 
 {{< figure src="/img/nye-proof-specs/better-error.png" >}}
 
-Second, explicitly defined invariants in both the specs and their executable versions make formal verification simpler, helping spot conflicts as the protocol grows complex.
+Second, explicitly defined invariants in both the specs and their executable versions make **formal verification simpler**, helping spot conflicts as the protocol grows complex.
 Hopefully, implementation teams will keep enriching specs with any new invariants they find along the way—it's a win-win.
 
-Specs shouldn't whisper invariants. They should yell them.
+Specs shouldn't whisper invariants. They should _yell_ them.
 
 ## References
 
