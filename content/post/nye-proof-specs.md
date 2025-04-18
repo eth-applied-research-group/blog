@@ -39,13 +39,13 @@ More unit tests? Yes.
 
 No deployments on New Year's Eve? A necessary sacrifice, sure.
 
-But the _why_ is rather hidden in plain sight. Throughout a specification, we bury its structural integrity —its _invariants_—in easy to miss normative prose.
+But the _why_ is rather hidden in plain sight. Throughout a specification, we bury its structural integrity—its _invariants_—in easy to miss normative prose.
 
 What if we didn't?
 
 ## First-class spec invariants
 
-Fortunately, Ethereum's specs are [executable](https://github.com/ethereum/execution-specs), which adds to their robustness. But there are compelling advantages to having explicitly defined invariants as part of the specs.
+Fortunately, Ethereum's specs are executable (see: [consensus specs](https://github.com/ethereum/consensus-specs) & [execution specs](https://github.com/ethereum/execution-specs)), which adds to their robustness. But there are compelling advantages to having explicitly defined invariants as part of the specs.
 
 First, we get **standardized errors** for free. Currently, errors are a fragmented mess across clients.
 
@@ -85,7 +85,7 @@ Hopefully, implementation teams will keep enriching specs with any new invariant
 
 Specs shouldn't whisper invariants. They should _yell_ them.
 
-_Thanks to Kev for discussions and feedback._
+_Thanks to [Ignacio](https://github.com/jsign), [Justin](https://github.com/jtraglia), and [Kev](https://github.com/kevaundray) for discussions and feedback._
 
 ## References
 
