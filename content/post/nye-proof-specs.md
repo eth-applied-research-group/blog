@@ -85,7 +85,7 @@ Hopefully, implementation teams will keep enriching specs with any new invariant
 
 Specs shouldn't whisper invariants. They should _yell_ them.
 
-_Thanks to [Dan](https://github.com/danceratopz), [Ignacio](https://github.com/jsign), [Justin](https://github.com/jtraglia), and [Kev](https://github.com/kevaundray) for discussions and feedback._
+_Thanks to [Dan](https://github.com/danceratopz), [Ignacio](https://github.com/jsign), [Justin](https://github.com/jtraglia), [Kev](https://github.com/kevaundray), and [Pari](https://github.com/parithosh) for discussions and feedback._
 
 ## References
 
