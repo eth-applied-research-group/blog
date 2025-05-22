@@ -1,5 +1,5 @@
 ---
-date: "2025-05-22T09:07:11+02:00"
+date: "2025-05-22T06:07:11+02:00"
 title: "Analysis of Block Access List (BAL) Using Geth"
 ---
 
