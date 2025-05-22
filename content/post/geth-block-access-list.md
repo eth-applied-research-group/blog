@@ -10,9 +10,43 @@ title: "Analysis of Block Access List (BAL) Using Geth"
 
 ## Introduction
 
+
 ## Methodology
-BALs are proposed part of block headers, we use an import-export mechanism to inject BALs to block headers,
-and import the modified block.
+BALs are proposed part of block headers, we use an import-export mechanism to inject BALs to block headers, and import the modified block.
+
+```go
+// 📄 core/types/block.go
+
+// SlotAccess tracks all accesses to a specific storage slot.
+type SlotAccess struct {
+    Slot     common.Hash      // Storage slot being accessed
+}
+
+// AccountAccess tracks all storage accesses for an account.
+type AccountAccess struct {
+    Address  common.Address   // Account address
+    Slots    []SlotAccess    // List of accessed storage slots
+}
+
+// Header represents a block header in the Ethereum blockchain.
+type Header struct {
+    ...
+
+ 	// BlockAccessList introduced by EIP-7928 and is ignored in legacy headers.
+    BlockAccessList *[]AccountAccess `json:"blockAccessList" rlp:"optional"`
+}
+```
+
+BAL is excluded from hash calculation to preserve original block hash.
+
+```go
+// 📄 core/types/block.go
+func (h *Header) Hash() common.Hash {
+	headerCopy := CopyHeader(h)
+	headerCopy.BlockAccessList = nil
+	return rlpHash(headerCopy)
+}
+```
 
 Export block range:
 
