@@ -14,6 +14,7 @@ title: "Analysis of Block Access List (BAL) Using Geth"
 ## Methodology
 BALs are proposed part of block headers, we use an import-export mechanism to inject BALs to block headers, and import the modified block.
 
+### BAL Data structure
 ```go
 // 📄 core/types/block.go
 
@@ -36,11 +37,72 @@ type Header struct {
     BlockAccessList *[]AccountAccess `json:"blockAccessList" rlp:"optional"`
 }
 ```
+### BAL header generation
 
-BAL is excluded from hash calculation to preserve original block hash.
+We slightly modify the block export function `ExportN` to inject BAL into the block header. This is done by reprocessing the block which warms up the cache, theaccess list is then populated by reading from the cache. 
+
+```go
+// 📄 core/blockchain.go
+
+func (bc *BlockChain) ExportN(w io.Writer, first uint64, last uint64) error {
+    ...
+
+	// Reprocess the block to warm up state cache.
+	parentBlock := bc.GetHeader(block.ParentHash(), block.NumberU64()-1)
+	statedb, err := state.New(parentBlock.Root, bc.statedb)	
+	if err != nil {
+		return err
+	}
+
+	_, err = bc.processor.Process(block, statedb, bc.vmConfig)
+	if err != nil {
+	  return err
+	}
+
+	// Store the access list in the block header.
+	accessList := statedb.GetBlockAccessList()
+	block.SetBlockAccessList(accessList)
+}
+```
+
+The `GetBlockAccessList` method populates the data from the cache.
+
+```go
+// 📄 core/state/statedb.go
+
+// GetBlockAccessList returns the block access list from the
+// state cache.
+func (s *StateDB) GetBlockAccessList() *[]types.AccountAccess {
+	var accesses []types.AccountAccess
+	
+	// Collect storage slot accesses for each accessed account
+	for account, state := range s.stateObjects {
+		// Get all storage slots accessed for this account
+		slots := make([]types.SlotAccess, 0)
+		for slot := range state.originStorage {
+			slots = append(slots, types.SlotAccess{
+				Slot: slot,
+			})
+		}
+
+		// Only add account if there were storage accesses
+		if len(slots) > 0 {
+			accesses = append(accesses, types.AccountAccess{
+				Address: account,
+				Slots:   slots,
+			})
+		}
+	}
+
+	return &accesses
+}
+```
+
+BAL is excluded from hash calculation to preserve original block hash. This allows for verification of block import.
 
 ```go
 // 📄 core/types/block.go
+
 func (h *Header) Hash() common.Hash {
 	headerCopy := CopyHeader(h)
 	headerCopy.BlockAccessList = nil
