@@ -48,7 +48,7 @@ The performance metrics reveal four key insights:
 
 2. **Storage Access Efficiency**: Storage read time dropped by 69% (477ms to 147ms) due to parallel loading of storage slots, eliminating serial read bottlenecks during execution.
 
-3. **Account Access Trade-offs**: The 70% increase in account read time stems from transactions compete with BAL to read account information such as nonce and balance. This needs further investigations and needs to be optimized.
+3. **Account Access Trade-offs**: The 70% increase in account read time stems from transactions competing with BAL for state access to read account information such as nonce and balance. This needs further investigations and needs to be optimized.
 
 4. **Execution Impact**: A 7% increase in execution time warrants investigation, though it falls within expected variance ranges.
 
