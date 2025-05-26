@@ -1,5 +1,5 @@
 ---
-date: "2025-05-22T06:07:11+02:00"
+date: "2025-05-26T06:07:11+02:00"
 title: "Analysis of Block Access List (BAL) Using Geth"
 ---
 
@@ -7,27 +7,57 @@ title: "Analysis of Block Access List (BAL) Using Geth"
 >
 > This analysis is a work in progress. The information presented may be incorrect or subject to change.
 
-## TL; DR
+## TL;DR
 
-- Block-level Access Lists (BALs) can enable both parallel I/O and parallel EVM execution. This analysis focuses specifically on I/O parallelization benefits.
-- Initial analysis was performed on a small sample of 120 blocks using modest hardware that resembles a real-world node setup. A larger sample size analysis will follow.
-- Adding BAL to block headers increased average RLP-encoded block size from 15MB to 20MB (~33% overhead).
-- Implementation extends Geth's already performant prefetcher to first check for BAL in block header - if present, directly warms up accounts and storage in parallel, otherwise falls back to transaction-based prefetching.
-- [Results to be added - performance improvements in I/O parallelization]
-- [Results to be added - overhead measurements]
-- [Results to be added - scalability implications]
+- Block-level Access Lists (BALs) enable both parallel I/O and EVM execution. This proof-of-concept focuses on I/O parallelization benefits.
+- Analysis conducted on 120 blocks using hardware representative of a typical Ethereum node. Extended analysis with larger sample size planned.
+- Implementation adds BALs to block headers, increasing average RLP-encoded block size from **15MB** to **20MB** (~**33%** overhead).
+- Results show **42%** reduction in mean block processing time (**708ms** to **409ms**), dominated by **69%** improvement in storage read performance (**477ms** to **147ms**).
+- Investigation required: **70%** increase in account read time from parallel loading and **7%** increase in execution time require investigation.
 
 ## Introduction
 
-Block-level Access Lists (BALs) aim to improve Ethereum's Layer 1 scalability by enabling efficient parallel transaction validation. While the full BAL proposal enables both parallel I/O and EVM execution, this analysis focuses specifically on parallel I/O optimization opportunities.
+Block-level Access Lists (BALs) proposes a significant advancement in Ethereum's Layer 1 scalability through parallel transaction validation. While the complete BAL proposal enables both parallel I/O and EVM execution, this analysis focuses exclusively on I/O parallelization opportunities.
 
-The key idea is to have block builders include explicit lists of which storage slots each transaction will access. This enables validators to parallelize disk I/O operations by knowing exactly which state to load upfront.
-
-For a detailed explanation of the BAL proposal and its various design considerations, please refer to [eth research post](https://ethresear.ch/t/block-level-access-lists-bals/22331).
+The core innovation allows block builders to provide explicit lists of storage slot accesses, enabling validators to parallelize state loading operations. For comprehensive details on the BAL proposal and its design considerations, refer to the [eth research post](https://ethresear.ch/t/block-level-access-lists-bals/22331).
 
 This analysis implements a proof-of-concept BAL system in Geth focused on I/O parallelization to evaluate its potential benefits and overhead.
 
 ## Results
+
+![Block Processing Time](/img/geth-block-access-list/block-processing.png)
+_Block processing time comparison between master branch (left) and BAL (right)_
+
+![Memory Usage](/img/geth-block-access-list/block-components.png)
+_Processing time comparisons of block components between master branch(left) and BAL(right) implementation_
+
+### Performance Metrics
+
+| Metric                | Master Branch | BAL Implementation | Change      |
+| --------------------- | ------------- | ------------------ | ----------- |
+| Block Processing Time | **708ms**     | **409ms**          | -**42%** ⬇️ |
+| Execution Time        | **82.9ms**    | **89ms**           | +**7%** ⬆️  |
+| Account Read Time     | **82.9ms**    | **141ms**          | +**70%** ⬆️ |
+| Storage Read Time     | **477ms**     | **147ms**          | -**69%** ⬇️ |
+
+### Analysis
+
+The performance metrics reveal four key insights:
+
+1. **Overall Performance**: Total block processing time decreased by 42%, primarily through optimized storage access patterns.
+
+2. **Storage Access Efficiency**: Storage read time dropped by 69% (477ms to 147ms) due to parallel loading of storage slots, eliminating serial read bottlenecks during execution.
+
+3. **Account Access Trade-offs**: The 70% increase in account read time stems from aggressive parallel loading of account data. While this creates an initial I/O spike, it contributes to reduced overall processing time. Further optimization opportunities exist.
+
+4. **Execution Impact**: A 7% increase in execution time warrants investigation, though it falls within expected variance ranges.
+
+5. **Transaction Execution Pattern**:
+   ![Block Execution Gantt Chart](/img/geth-block-access-list/execution-gantt.png)
+
+   The Gantt chart visualization reveals an interesting execution pattern. Early transactions show longer execution times as they compete with BAL prefetching for state loading. However, as block execution progresses, more transactions benefit from the prefetched state, resulting in significantly faster execution times towards the tail end of the block. This demonstrates the cumulative benefit of BAL prefetching, though it suggests potential optimization opportunities for early transaction execution.
+
+These results demonstrate BAL's potential for significant I/O parallelization benefits, even with current overhead costs.
 
 ## Methodology
 
@@ -254,3 +284,8 @@ to an average home node.
 - **CPU**: 16 core vCPU @ 2.0GHz
 - **Memory**: 32G
 - **Go**: go1.24.2 linux/amd64
+
+## References
+
+1. [Block-level Access Lists (BALs)](https://ethresear.ch/t/block-level-access-lists-bals/22331) - Toni Wahrstätter, Ethereum Research
+2. [BAL Implementation](https://github.com/raxhvl/go-ethereum/tree/research/block-access-list) - GitHub Repository
