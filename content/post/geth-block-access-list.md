@@ -90,6 +90,8 @@ type Header struct {
 
 ### BAL header generation
 
+For this analysis, we simulate block builder behavior by injecting BALs into existing blocks during export. In production, this would be handled by block builders during block construction.
+
 We slightly modify the block export function `ExportN` to inject BAL into the block header. This is done by reprocessing the block which warms up the cache, the access list is then populated by reading from the cache.
 
 ```go
@@ -204,6 +206,8 @@ eth.blockNumber==22552000
 
 ### Prefetching BAL
 
+BALs are used to prefetch state in parallel by full nodes and validators when validating a block.
+
 The code below extends the already performant prefetcher which warms up the state caches
 jIt first checks for a BlockAccessList in the header - if present, it directly warms up those accounts and storages
 in parallel. Otherwise, it falls back to executing transactions to discover
@@ -273,8 +277,7 @@ throughput.
 
 ## Measurement setup
 
-A modified version of geth, and lighthouse CL. We use a modest hardware setup, closer
-to an average home node.
+Then analysis was conducted using a modified version of Geth (linked below) with an unmodified Lighthouse consensus client. We use a modest hardware setup, closer to an average home node.
 
 ### Hardware
 
