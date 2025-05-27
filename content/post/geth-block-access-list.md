@@ -11,9 +11,9 @@ title: "Analysis of Block Access List (BAL) Using Geth"
 
 - Block-level Access Lists (BALs) enable both parallel I/O and EVM execution. This proof-of-concept focuses on I/O parallelization benefits.
 - Analysis conducted on 120 blocks using hardware representative of a typical Ethereum node. Extended analysis with larger sample size planned.
-- Implementation adds BALs to block headers, increasing average RLP-encoded block size from **15MB** to **20MB** (~**33%** overhead).
+- Implementation adds BALs to block headers, increasing total RLP-encoded size for 120 blocks from **15MB** to **20MB** (~**33%** overhead).
 - Results show **42%** reduction in mean block processing time (**708ms** to **409ms**), dominated by **69%** improvement in storage read performance (**477ms** to **147ms**).
-- Investigation required: **70%** increase in account read time from parallel loading and **7%** increase in execution time require investigation.
+- Investigation required: **70%** increase in account read time and **7%** increase in execution time require investigation.
 
 ## Introduction
 
@@ -33,12 +33,12 @@ _Processing time comparisons of block components between master branch(left) and
 
 ### Performance Metrics
 
-| Metric                | Master Branch | BAL Implementation | Change      |
-| --------------------- | ------------- | ------------------ | ----------- |
-| Block Processing Time | **708ms**     | **409ms**          | -**42%** ⬇️ |
-| Execution Time        | **82.9ms**    | **89ms**           | +**7%** ⬆️  |
-| Account Read Time     | **82.9ms**    | **141ms**          | +**70%** ⬆️ |
-| Storage Read Time     | **477ms**     | **147ms**          | -**69%** ⬇️ |
+| Metric (mean per block) | Master Branch | BAL Implementation | Change      |
+| ----------------------- | ------------- | ------------------ | ----------- |
+| Block Processing Time   | **708ms**     | **409ms**          | -**42%** ⬇️ |
+| Execution Time          | **82.9ms**    | **89ms**           | +**7%** ⬆️  |
+| Account Read Time       | **82.9ms**    | **141ms**          | +**70%** ⬆️ |
+| Storage Read Time       | **477ms**     | **147ms**          | -**69%** ⬇️ |
 
 ### Analysis
 
@@ -208,11 +208,7 @@ eth.blockNumber==22552000
 
 BALs are used to prefetch state in parallel by full nodes and validators when validating a block.
 
-The code below extends the already performant prefetcher which warms up the state caches
-jIt first checks for a BlockAccessList in the header - if present, it directly warms up those accounts and storages
-in parallel. Otherwise, it falls back to executing transactions to discover
-the state access patterns. All reads are performed in parallel to maximize
-throughput.
+This implementation extends Geth's existing prefetcher by checking for a BlockAccessList in the header. If present, it warms up accounts and storage slots in parallel. Otherwise, it falls back to the original transaction-based prefetching. All state reads are performed in parallel to maximize throughput.
 
 ```go
 // 📄 core/state_prefetcher.go
@@ -249,6 +245,20 @@ throughput.
 
 ```
 
+## Methodology Comparison
+
+Our implementation differs from [initial tests and simulations by EthStorage/Quarkchain](https://hackmd.io/X4Z4h-EQRPSiQF38rpN9aQ) in two key aspects:
+
+### 1. BAL Integration Method
+
+- **EthStorage/Quarkchain**: Imported BALs separately from JSON files during testing
+- **Current Implementation**: Injects BALs directly into block headers, aligning with the BAL specification and helps estimate block size overhead.
+
+### 2. Prefetcher Architecture
+
+- **EthStorage/Quarkchain**: Implemented a custom BAL prefetcher
+- **Current Implementation**: Extends Geth's already performant prefetcher. This helps maintain backward compatibility by falling back to existing prefetching for blocks without BALs and closely compares BALs against geth baseline.
+
 ## Measurement setup
 
 Then analysis was conducted using a modified version of Geth (linked below) with an unmodified Lighthouse consensus client. We use a modest hardware setup, closer to an average home node.
@@ -266,3 +276,4 @@ Then analysis was conducted using a modified version of Geth (linked below) with
 
 1. [Block-level Access Lists (BALs)](https://ethresear.ch/t/block-level-access-lists-bals/22331) - Toni Wahrstätter, Ethereum Research
 2. [BAL Implementation](https://github.com/raxhvl/go-ethereum/tree/research/block-access-list) - GitHub Repository
+3. [EthStorage/Quarkchain BAL Implementation](https://hackmd.io/X4Z4h-EQRPSiQF38rpN9aQ?view) - EthStorage Team
